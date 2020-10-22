@@ -54,12 +54,36 @@ def move_stack(stack_size, src_tower_index, dst_tower_index):
 
     free_tower_index = get_free_tower(src_tower_index, dst_tower_index)
     move_stack(stack_size - 1, src_tower_index, free_tower_index)
-    print(str(src_tower_index) + " - " + str(dst_tower_index) + " \n")
+    print(str(MAX_RINGS_COUNT + 1 - stack_size) + ":" + str(src_tower_index) + " - " + str(dst_tower_index))
     towers[src_tower_index].move_ring(towers[dst_tower_index])
     move_stack(stack_size - 1, free_tower_index, dst_tower_index)
 
 
+def read_params(file):
+    params = {}
+    lines = file.readlines()
+    key = ''
+    for line in lines:
+        line = line.strip(" \n\r/")
+        if line in ['NPARTS', 'COST', 'ORDER']:
+            key = line
+            params[line] = []
+            continue
+        line = line.split('--')
+        line = line[0]
+        line = line.strip(" \n\r/")
+        if line.__len__() == 0:
+            continue
+        line = line.split()
+        params[key].append([int(n) for n in line])
+
+    print(params)
+
+
 def solve():
+    file = open('input.txt', mode='r', encoding='utf-8-sig')
+    read_params(file)
+    file.close()
     towers[0] = Tower(MAX_RINGS_COUNT)
     move_stack(MAX_RINGS_COUNT, 0, 1)
 
