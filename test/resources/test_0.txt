@@ -1,0 +1,13 @@
+NPARTS
+3 /
+COST
+1 1 1 / -- dasdsa
+ORDER
+0 0 1 -- asdsa
+1 0 2
+0 1 2--asd
+2 0 1
+0 2 0
+1 2 1
+0 0 1
+/
