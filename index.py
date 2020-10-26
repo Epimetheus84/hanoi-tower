@@ -1,16 +1,19 @@
-MAX_RINGS_COUNT = 5
+MAX_RINGS_COUNT = 4
 # вынес для удобства
-TOWERS_COUNT = 3
+TOWERS_COUNT = 4
+TOTAL_MOVEMENTS = 0
 
 
 class Tower:
     rings_count = 0
     rings = [0] * MAX_RINGS_COUNT
+    cost = 0
 
-    def __init__(self, rings_count=0):
+    def __init__(self, rings_count=0, cost=0):
         if rings_count == 0:
             return
 
+        self.cost = 0
         self.rings_count = rings_count
         for i in range(rings_count):
             self.rings[i] = rings_count - i
@@ -33,30 +36,48 @@ class Tower:
         dest_tower.rings_count = dest_tower.rings_count + 1
 
 
-def get_free_tower(src_tower_index, dst_tower_index):  # получаем свободную башню
-    if src_tower_index == dst_tower_index:
-        raise Exception("Ring cannot be moved to the same tower.")
-
-    if src_tower_index not in range(TOWERS_COUNT) \
-            or dst_tower_index not in range(TOWERS_COUNT):
-        raise Exception("Invalid indexes.")
-
-    # в теории можно прикрутить распределение стека для случая, где TOWERS_COUNT > 3
-    # но это уже просто ради креатива :)
+def get_free_tower(exclude_indexes):  # получаем свободную башню
+    # находим башню с минимальной стоимостью на перестановку
+    free_tower_index = 0
+    min_cost = 0
     for i in range(TOWERS_COUNT):
-        if i not in [src_tower_index, dst_tower_index]:
-            return i
+        if i not in exclude_indexes:
+            temp_cost = towers[i].cost * towers[i].rings_count
+            # print(i, temp_cost)
+            if min_cost == 0 or min_cost > temp_cost:
+                min_cost = temp_cost
+                free_tower_index = i
+
+    return free_tower_index
 
 
+# для 3 и 5+
 def move_stack(stack_size, src_tower_index, dst_tower_index):
     if stack_size == 0:
         return
 
-    free_tower_index = get_free_tower(src_tower_index, dst_tower_index)
-    move_stack(stack_size - 1, src_tower_index, free_tower_index)
-    print(str(MAX_RINGS_COUNT + 1 - stack_size) + ":" + str(src_tower_index) + " - " + str(dst_tower_index))
+    free_tower_index = get_free_tower([src_tower_index, dst_tower_index])
+    move_stack(stack_size - 2, src_tower_index, free_tower_index)
     towers[src_tower_index].move_ring(towers[dst_tower_index])
-    move_stack(stack_size - 1, free_tower_index, dst_tower_index)
+    move_stack(stack_size - 2, free_tower_index, dst_tower_index)
+
+
+# для 4
+def move_stack_reve(stack_size, src_tower_index, dst_tower_index, free_tower_index_1, free_tower_index_2):
+    if stack_size == 0:
+        return
+
+    if stack_size == 1:
+        towers[src_tower_index].move_ring(towers[dst_tower_index])
+        return
+
+    move_stack_reve(stack_size - 2, src_tower_index, free_tower_index_1, free_tower_index_2, dst_tower_index)
+
+    towers[src_tower_index].move_ring(towers[free_tower_index_2])
+    towers[src_tower_index].move_ring(towers[dst_tower_index])
+    towers[free_tower_index_2].move_ring(towers[dst_tower_index])
+
+    move_stack_reve(stack_size - 2, free_tower_index_1, dst_tower_index, src_tower_index, free_tower_index_2)
 
 
 def read_params(file):
@@ -85,8 +106,20 @@ def solve():
     read_params(file)
     file.close()
     towers[0] = Tower(MAX_RINGS_COUNT)
-    move_stack(MAX_RINGS_COUNT, 0, 1)
+    src_tower_index = 0
+    dst_tower_index = 1
+
+    if TOWERS_COUNT == 4:
+        free_tower_index_1 = get_free_tower([src_tower_index, dst_tower_index])
+        free_tower_index_2 = get_free_tower([src_tower_index, dst_tower_index, free_tower_index_1])
+        move_stack_reve(MAX_RINGS_COUNT, src_tower_index, dst_tower_index, free_tower_index_1, free_tower_index_2)
+    else:
+        move_stack(MAX_RINGS_COUNT, src_tower_index, dst_tower_index)
 
 
 towers = [Tower()] * TOWERS_COUNT
+towers[0].cost = 1
+towers[1].cost = 2
+towers[2].cost = 4
+towers[3].cost = 6
 solve()
