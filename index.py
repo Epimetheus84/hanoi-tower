@@ -9,7 +9,7 @@ class Tower:
     rings = [0] * MAX_RINGS_COUNT
     cost = 0
 
-    def __init__(self, rings_count=0, cost=0):
+    def __init__(self, rings_count=0):
         if rings_count == 0:
             return
 
@@ -59,6 +59,7 @@ def move_stack(stack_size, src_tower_index, dst_tower_index):
     free_tower_index = get_free_tower([src_tower_index, dst_tower_index])
     move_stack(stack_size - 2, src_tower_index, free_tower_index)
     towers[src_tower_index].move_ring(towers[dst_tower_index])
+    print(stack_size - 1, src_tower_index, dst_tower_index)
     move_stack(stack_size - 2, free_tower_index, dst_tower_index)
 
 
@@ -73,8 +74,11 @@ def move_stack_reve(stack_size, src_tower_index, dst_tower_index, free_tower_ind
 
     move_stack_reve(stack_size - 2, src_tower_index, free_tower_index_1, free_tower_index_2, dst_tower_index)
 
+    print(stack_size - 2, src_tower_index, free_tower_index_2)
     towers[src_tower_index].move_ring(towers[free_tower_index_2])
+    print(stack_size - 1, src_tower_index, dst_tower_index)
     towers[src_tower_index].move_ring(towers[dst_tower_index])
+    print(stack_size - 2, free_tower_index_2, dst_tower_index)
     towers[free_tower_index_2].move_ring(towers[dst_tower_index])
 
     move_stack_reve(stack_size - 2, free_tower_index_1, dst_tower_index, src_tower_index, free_tower_index_2)
