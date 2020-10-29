@@ -13,23 +13,22 @@ class HanoiTowerPuzzleException(RuntimeError):
 
 
 class HanoiTowerPuzzle:
-    def __init__(self, disks_number: int, costs: List[int], check_decision: Decision = None, src_peg_index: int = 0):
-        self.pegs = []
-        for peg_index in range(len(costs)):
-            self.pegs.append([])
-        self.pegs[0] = [(disks_number - 1 - disk_index) for disk_index in range(disks_number)]
+    def __init__(self, disks_number: int, costs: List[int], check_decision: Decision = None, src_peg_index: int = 0,
+                 dst_peg_index: int = 1):
         self.costs = costs
+        self.disks_number = disks_number
+        self.src_peg_index = src_peg_index
+        self.dst_peg_index = dst_peg_index
         self.check_decision = check_decision
         self.decision = []
-        self.src_peg_index = src_peg_index
+        self.pegs = []
+        self._reset_pegs()
 
     def solve(self, dst_peg_index: int = None) -> Optional[Decision]:
         if not dst_peg_index:
             dst_peg_index = self._get_optimal_peg([self.src_peg_index])
         disks_number = len(self.pegs[self.src_peg_index])
         pegs_number = len(self.pegs)
-        if pegs_number == 2 and disks_number > 1:
-            return None
         if pegs_number == 4:
             free_peg_index_1 = self._get_optimal_peg([self.src_peg_index, dst_peg_index])
             free_peg_index_2 = self._get_optimal_peg([self.src_peg_index, dst_peg_index, free_peg_index_1])
@@ -43,6 +42,20 @@ class HanoiTowerPuzzle:
         for (_, _, dest_peg_number) in decision:
             cost += self.costs[dest_peg_number]
         return cost
+
+    def _reset_pegs(self):
+        self.pegs = []
+        for peg_index in range(len(self.costs)):
+            self.pegs.append([])
+        self.pegs[0] = [(self.disks_number - 1 - disk_index) for disk_index in range(self.disks_number)]
+
+    def test_decision(self, decision: Decision):
+        self._reset_pegs()
+        for (ring_number, src_reg_number, dest_peg_number) in decision:
+            self._move_disk(src_reg_number, dest_peg_number, ring_number)
+
+        if len(self.pegs[self.dst_peg_index]) != self.disks_number:
+            raise Exception("The problem isn't solved, some rings are still not moved")
 
     @staticmethod
     def load_from_file(path: str) -> HanoiTowerPuzzle:
@@ -113,7 +126,7 @@ class HanoiTowerPuzzle:
     def _get_optimal_peg(self, exclude_indices: List[int] = None) -> int:
         max_int = 2147483647
         src_peg_top = max_int
-        optimal_peg_index = -1
+        optimal_peg_index = 0
         optimal_peg_cost = max_int
         for peg_index, peg_disks in enumerate(self.pegs):
             if (exclude_indices is not None) and (peg_index in exclude_indices):
@@ -125,7 +138,21 @@ class HanoiTowerPuzzle:
                 optimal_peg_cost = peg_cost
         return optimal_peg_index
 
-    def _move_disk(self, src_peg_index, dst_peg_index) -> Step:
+    def _move_disk(self, src_peg_index, dst_peg_index, test_disk_number = None) -> Step:
+        if src_peg_index == dst_peg_index:
+            raise Exception("The ring cannot be transferred to the same peg")
+
         disk = self.pegs[src_peg_index].pop()
+
+        if test_disk_number:
+            test_disk_number = int(test_disk_number)
+
+            if disk < test_disk_number:
+                raise Exception("Ring " + str(test_disk_number) +
+                                " cannot be moved until ring " + str(test_disk_number - 1) + " is moved")
+
+            if disk > test_disk_number:
+                raise Exception("Ring " + str(test_disk_number) + " isn't located in peg " + str(dst_peg_index + 1))
+
         self.pegs[dst_peg_index].append(disk)
         return disk, src_peg_index, dst_peg_index

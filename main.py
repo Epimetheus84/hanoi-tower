@@ -23,9 +23,13 @@ if __name__ == '__main__':
           f'{puzzle.costs}')
     print(f'check decision: \n'
           f'{puzzle.check_decision}')
-    print(f'check decision cost = {puzzle.calc_decision_cost(puzzle.check_decision)}')
 
     decision = puzzle.solve(dst_peg_index=1)
+
+    print(f'check decision cost = {puzzle.calc_decision_cost(puzzle.check_decision)}')
+
     print(f'decision: \n'
           f'{decision}')
     print(f'decision cost = {puzzle.calc_decision_cost(decision)}')
+
+    puzzle.test_decision(puzzle.check_decision)
