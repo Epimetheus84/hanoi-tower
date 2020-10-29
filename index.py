@@ -84,31 +84,7 @@ def move_stack_reve(stack_size, src_tower_index, dst_tower_index, free_tower_ind
     move_stack_reve(stack_size - 2, free_tower_index_1, dst_tower_index, src_tower_index, free_tower_index_2)
 
 
-def read_params(file):
-    params = {}
-    lines = file.readlines()
-    key = ''
-    for line in lines:
-        line = line.strip(" \n\r/")
-        if line in ['NPARTS', 'COST', 'ORDER']:
-            key = line
-            params[line] = []
-            continue
-        line = line.split('--')
-        line = line[0]
-        line = line.strip(" \n\r/")
-        if line.__len__() == 0:
-            continue
-        line = line.split()
-        params[key].append([int(n) for n in line])
-
-    print(params)
-
-
 def solve():
-    file = open('input.txt', mode='r', encoding='utf-8-sig')
-    read_params(file)
-    file.close()
     towers[0] = Tower(MAX_RINGS_COUNT)
     src_tower_index = 0
     dst_tower_index = 1
